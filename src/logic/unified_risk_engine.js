@@ -344,6 +344,63 @@ export function calculateFacilityRiskProfile(phcId, horizon = 7, customPhc = nul
     other_operational: { score: otherPoints, max: 5, pct: Math.round((otherPoints / 5) * 100), label: "Other Operational" }
   };
 
+  const domain_scores = {
+    SUPPLY: {
+      domain: "SUPPLY",
+      points: maxSupplyPoints,
+      max_points: 30,
+      weight_pct: 30,
+      severity: supplySeverity,
+      label: "Medicine Supply",
+      notes: "Critical stock depletion and safety buffer gaps"
+    },
+    DEMAND: {
+      domain: "DEMAND",
+      points: demandPoints,
+      max_points: 20,
+      weight_pct: 20,
+      severity: demandSeverity,
+      label: "Patient Demand",
+      notes: "Footfall surge deviation relative to 7-day baseline"
+    },
+    CAPACITY: {
+      domain: "CAPACITY",
+      points: capacityPoints,
+      max_points: 20,
+      weight_pct: 20,
+      severity: capacitySeverity,
+      label: "Bed Capacity",
+      notes: "Inpatient bed saturation and projected peak occupancy"
+    },
+    WORKFORCE: {
+      domain: "WORKFORCE",
+      points: workforcePoints,
+      max_points: 15,
+      weight_pct: 15,
+      severity: workforceSeverity,
+      label: "Workforce",
+      notes: "Staff attendance vs required clinical personnel"
+    },
+    DELIVERY: {
+      domain: "DELIVERY",
+      points: deliveryPoints,
+      max_points: 10,
+      weight_pct: 10,
+      severity: deliverySeverity,
+      label: "Delivery Risk",
+      notes: "Replenishment schedule alignment with depletion rate"
+    },
+    OTHER: {
+      domain: "OTHER",
+      points: otherPoints,
+      max_points: 5,
+      weight_pct: 5,
+      severity: otherPoints >= 4 ? "CRITICAL" : otherPoints >= 3 ? "WARNING" : otherPoints >= 2 ? "WATCH" : "NORMAL",
+      label: "Other Operational",
+      notes: "Facility infrastructure, cold chain, and general readiness"
+    }
+  };
+
   // Top Contributing Domains sorted descending by score percentage
   const topContributors = Object.values(breakdown)
     .sort((a, b) => b.pct - a.pct)
@@ -389,6 +446,8 @@ export function calculateFacilityRiskProfile(phcId, horizon = 7, customPhc = nul
     is_compound_risk: isCompoundRisk,
     is_emerging_risk: isEmergingRisk,
     emerging_risk_description: emergingRiskDescription,
+    domain_scores: domain_scores,
+    domainScores: domain_scores,
     breakdown: breakdown,
     top_contributors: topContributors,
     signals: signals,

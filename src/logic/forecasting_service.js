@@ -196,6 +196,7 @@ export function forecastPatientDemand(phcId, horizon = 7) {
     avg_projected_daily: avgProjected,
     peak_projected_daily: peakProjected,
     forecast_series: forecastSeries,
+    forecastSeries: forecastSeries,
     history_last_14_days: footfallSeries.slice(-14),
     metrics: {
       sma7: Math.round(sma7),
@@ -339,7 +340,8 @@ export function forecastBedOccupancy(phcId, horizon = 7) {
   const forecastSeries = [];
   let runningOccupied = currentOccupied;
 
-  footfallForecast.forecastSeries.forEach((pt, idx) => {
+  const footfallSeries = footfallForecast.forecast_series || footfallForecast.forecastSeries || [];
+  footfallSeries.forEach((pt, idx) => {
     // New admissions expected
     const newAdmissions = pt.projected * admissionRate;
     // Discharges from existing cohort
@@ -394,6 +396,7 @@ export function forecastBedOccupancy(phcId, horizon = 7) {
     peak_pressure: peakPressure,
     horizon_days: horizon,
     forecast_series: forecastSeries,
+    forecastSeries: forecastSeries,
     whyThisForecast: drivers
   };
 }
