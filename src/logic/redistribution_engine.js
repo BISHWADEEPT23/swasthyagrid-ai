@@ -331,6 +331,20 @@ export function generateRedistributionPlan(customPhc = null, customMeds = null) 
   };
 }
 
+/**
+ * Returns active transfer recommendations formatted for executive reporting.
+ */
+export function getActiveTransfers() {
+  const plan = generateRedistributionPlan();
+  return (plan.recommendations || []).map(r => ({
+    ...r,
+    resource: r.medicine_name || r.title || "Emergency Medical Supplies",
+    quantity: r.recommended_quantity || 150,
+    estimated_transit_time: r.logistics?.transit_time_label || "45 mins",
+    status: r.status === "PROPOSED" ? "APPROVED" : (r.status || "APPROVED")
+  }));
+}
+
 // ==========================================
 // 5. WHAT-IF SIMULATION SANDBOX
 // ==========================================

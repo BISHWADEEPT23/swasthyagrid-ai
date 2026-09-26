@@ -323,6 +323,10 @@ export function getGlobalModel() {
   return JSON.parse(JSON.stringify(activeGlobalModel));
 }
 
+export function getActiveFederationRound() {
+  return getGlobalModel();
+}
+
 export function getFederationHistory() {
   return JSON.parse(JSON.stringify(federationHistory));
 }

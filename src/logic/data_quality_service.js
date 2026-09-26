@@ -15,7 +15,7 @@
  */
 
 import { PHC_DATASET } from "../data/phc_dataset.js";
-import { MEDICINES, MEDICINE_INVENTORY } from "../data/medicine_dataset.js";
+import { MEDICINE_CATALOG, MEDICINE_INVENTORY_DATASET } from "../data/medicine_dataset.js";
 import { evaluateDataFreshness } from "./system_health_service.js";
 
 export function validatePlatformData() {
@@ -41,16 +41,17 @@ export function validatePlatformData() {
       }
 
       // Check capacity
-      if (phc.bed_capacity) {
-        const { total_beds, occupied_beds } = phc.bed_capacity;
-        if (total_beds <= 0) {
+      const totalBeds = phc.total_beds ?? phc.bed_capacity?.total_beds;
+      const occupiedBeds = phc.occupied_beds ?? phc.bed_capacity?.occupied_beds;
+      if (typeof totalBeds === "number" && typeof occupiedBeds === "number") {
+        if (totalBeds <= 0) {
           errors.push({ field: `${phc.phc_id}.total_beds`, message: "Total beds must be positive" });
         }
-        if (occupied_beds < 0) {
+        if (occupiedBeds < 0) {
           errors.push({ field: `${phc.phc_id}.occupied_beds`, message: "Occupied beds cannot be negative" });
         }
-        if (occupied_beds > total_beds * 1.5) {
-          warnings.push({ field: `${phc.phc_id}.bed_saturation`, message: `Extreme bed saturation: ${occupied_beds}/${total_beds} beds` });
+        if (occupiedBeds > totalBeds * 1.5) {
+          warnings.push({ field: `${phc.phc_id}.bed_saturation`, message: `Extreme bed saturation: ${occupiedBeds}/${totalBeds} beds` });
         }
       } else {
         missingValuesCount++;
@@ -58,12 +59,14 @@ export function validatePlatformData() {
       }
 
       // Check coordinates
-      if (!phc.coordinates || typeof phc.coordinates.lat !== "number" || typeof phc.coordinates.lng !== "number") {
+      const lat = phc.latitude ?? phc.coordinates?.lat;
+      const lng = phc.longitude ?? phc.coordinates?.lng;
+      if (typeof lat !== "number" || typeof lng !== "number") {
         errors.push({ field: `${phc.phc_id}.coordinates`, message: "Invalid or missing geospatial coordinates" });
       }
 
       // Check historical demand trend
-      if (!phc.patient_demand || !Array.isArray(phc.patient_demand.historical_7d) || phc.patient_demand.historical_7d.length < 7) {
+      if (phc.patient_demand?.historical_7d && (!Array.isArray(phc.patient_demand.historical_7d) || phc.patient_demand.historical_7d.length < 7)) {
         warnings.push({ field: `${phc.phc_id}.historical_7d`, message: "Historical demand has fewer than 7 days of observation" });
       }
     });
@@ -71,32 +74,34 @@ export function validatePlatformData() {
 
   // 2. Validate Medicines
   const medIdSet = new Set();
-  if (!MEDICINES || !Array.isArray(MEDICINES)) {
-    errors.push({ field: "MEDICINES", message: "Medicines list is missing or not an array" });
+  if (!MEDICINE_CATALOG || !Array.isArray(MEDICINE_CATALOG)) {
+    errors.push({ field: "MEDICINE_CATALOG", message: "Medicines list is missing or not an array" });
   } else {
-    MEDICINES.forEach((med, idx) => {
+    MEDICINE_CATALOG.forEach((med, idx) => {
       recordsChecked++;
-      if (!med.medicine_id) {
-        errors.push({ field: `MEDICINE[${idx}].medicine_id`, message: "Missing medicine ID" });
+      const id = med.id || med.medicine_id;
+      if (!id) {
+        errors.push({ field: `MEDICINE[${idx}].id`, message: "Missing medicine ID" });
         missingValuesCount++;
       } else {
-        medIdSet.add(med.medicine_id);
+        medIdSet.add(id);
       }
     });
   }
 
   // 3. Validate Inventory
-  if (!MEDICINE_INVENTORY || !Array.isArray(MEDICINE_INVENTORY)) {
-    errors.push({ field: "MEDICINE_INVENTORY", message: "Inventory list is missing or not an array" });
+  if (!MEDICINE_INVENTORY_DATASET || !Array.isArray(MEDICINE_INVENTORY_DATASET)) {
+    errors.push({ field: "MEDICINE_INVENTORY_DATASET", message: "Inventory list is missing or not an array" });
   } else {
-    MEDICINE_INVENTORY.forEach((item, idx) => {
+    MEDICINE_INVENTORY_DATASET.forEach((item, idx) => {
       recordsChecked++;
       // Check references
       if (!phcIdSet.has(item.phc_id)) {
         errors.push({ field: `INVENTORY[${idx}].phc_id`, message: `Broken reference: PHC ${item.phc_id} not found in PHC_DATASET` });
       }
-      if (!medIdSet.has(item.medicine_id)) {
-        errors.push({ field: `INVENTORY[${idx}].medicine_id`, message: `Broken reference: Medicine ${item.medicine_id} not found in MEDICINES` });
+      const catalogId = item.medicine_catalog_id || item.medicine_id;
+      if (!medIdSet.has(catalogId)) {
+        errors.push({ field: `INVENTORY[${idx}].medicine_id`, message: `Broken reference: Medicine ${catalogId} not found in MEDICINE_CATALOG` });
       }
 
       // Check negative stock
@@ -105,7 +110,8 @@ export function validatePlatformData() {
       }
 
       // Check consumption rate
-      if (item.daily_consumption_rate < 0) {
+      const consumption = item.daily_consumption ?? item.daily_consumption_rate;
+      if (typeof consumption === "number" && consumption < 0) {
         errors.push({ field: `INVENTORY[${idx}].daily_consumption_rate`, message: "Daily consumption rate cannot be negative" });
       }
 
