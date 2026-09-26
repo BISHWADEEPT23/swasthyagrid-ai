@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwasthyaGrid AI — National Health Command Centre</title>
+  
+  <!-- Meta description -->
+  <meta name="description" content="AI-powered federated public-health resource and supply-chain resilience platform for national-scale Primary Health Centre networks." />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#0f172a',
+              navyLight: '#1e293b',
+              blue: '#0284c7',
+              blueHover: '#0369a1',
+              normal: '#10b981',
+              watch: '#facc15',
+              warning: '#f59e0b',
+              critical: '#ef4444'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Leaflet CSS & JS for Interactive Map -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Chart.js for Operational Trend Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="bg-slate-50 text-slate-900 font-sans antialiased">
+  <div id="app-root">
+    <!-- Rendered dynamically by src/app.js -->
+    <div class="flex h-screen items-center justify-center bg-slate-900 text-white">
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-lg bg-sky-500 mx-auto flex items-center justify-center font-black text-xl mb-3 animate-pulse">
+          SG
+        </div>
+        <div class="text-base font-bold">SwasthyaGrid AI</div>
+        <div class="text-xs text-slate-400 mt-1">Connecting to Federated Operational Mesh...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main ES Module Script -->
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
