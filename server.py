@@ -729,9 +729,15 @@ if __name__ == "__main__":
     web_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(web_dir)
 
+    # Port resolution: 1) command-line argument, 2) PORT env var, 3) default 8080
     if len(sys.argv) > 1:
         try:
             PORT = int(sys.argv[1])
+        except ValueError:
+            pass
+    elif "PORT" in os.environ:
+        try:
+            PORT = int(os.environ["PORT"])
         except ValueError:
             pass
 
